@@ -32,14 +32,6 @@ lint:
     - classic
     - library
 
-layout:
-  /etc/manpath.config:
-    bind-file: $SNAP/etc/manpath.config
-  /usr/share/locale:
-    bind: $SNAP/usr/share/locale
-  /usr/lib/man-db:
-    bind: $SNAP/usr/lib/man-db
-
 parts:
   gdb:
     source: https://sourceware.org/git/binutils-gdb.git
@@ -50,8 +42,8 @@ parts:
       craftctl default
     override-build: |
       cd $CRAFT_PART_SRC
-      craftctl set version="$(git describe --abbrev=0 --tags)"
-      ./configure --prefix=/usr --enable-static=yes
+      craftctl set version="$(git describe --abbrev=0 --tags | awk -F'-' '{ print $2 }')"
+      ./configure --prefix=/usr --enable-static --disable-interprocess-agent --with-static-standard-libraries --disable-tui
       make -j$(nproc --all)
     override-stage: |
       craftctl default
@@ -66,8 +58,8 @@ parts:
       - autoconf
       - gettext
       - texinfo
-      - libssl-dev
-      - libexpat1-dev
       - libgmp-dev
       - libmpfr-dev
-
+    prime:
+      - usr/bin/gdb
+      - usr/bin/gdbserver
