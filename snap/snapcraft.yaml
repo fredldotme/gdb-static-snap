@@ -1,0 +1,73 @@
+name: gdb-static
+adopt-info: gdb
+license: GPL-3.0-or-later
+summary: GDB as a static binary
+description: |
+  GDB is a notoriously known debugger for GNU/Linux and *BSD systems. This is a static build for all supported systems.
+
+  Note: To use this debugger, please start it outside of confinement, ie execute it directly:
+
+  `/snap/gdb-static/current/usr/bin/gdb`
+
+confinement: strict
+build-base: core24
+base: bare
+compression: lzo
+
+platforms:
+  arm64:
+    build-on: [arm64]
+  amd64:
+    build-on: [amd64]
+  armhf:
+    build-on: [armhf]
+
+apps:
+  gdb-static:
+    #command-chain: [ usr/bin/envsetup ]
+    command: usr/bin/gdb
+
+lint:
+  ignore:
+    - classic
+    - library
+
+layout:
+  /etc/manpath.config:
+    bind-file: $SNAP/etc/manpath.config
+  /usr/share/locale:
+    bind: $SNAP/usr/share/locale
+  /usr/lib/man-db:
+    bind: $SNAP/usr/lib/man-db
+
+parts:
+  gdb:
+    source: https://sourceware.org/git/binutils-gdb.git
+    source-tag: gdb-17.2-release
+    source-depth: 1
+    plugin: nil
+    override-pull: |
+      craftctl default
+    override-build: |
+      cd $CRAFT_PART_SRC
+      craftctl set version="$(git describe --abbrev=0 --tags)"
+      ./configure --prefix=/usr --enable-static=yes
+      make -j$(nproc --all)
+    override-stage: |
+      craftctl default
+    override-prime: |
+      craftctl default
+      cd $CRAFT_PART_SRC
+      DESTDIR=$CRAFT_PRIME make install
+    build-packages:
+      - build-essential
+      - bison
+      - flex
+      - autoconf
+      - gettext
+      - texinfo
+      - libssl-dev
+      - libexpat1-dev
+      - libgmp-dev
+      - libmpfr-dev
+
