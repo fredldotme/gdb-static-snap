@@ -3,15 +3,21 @@ adopt-info: gdb
 license: GPL-3.0-or-later
 summary: GDB as a static binary
 description: |
-  GDB is a notoriously known debugger for GNU/Linux and *BSD systems. This is a static build for all supported systems.
+  gdb & gdbserver, the go-to debugging tools for GNU/Linux and *BSD systems.
+  This provides a minimalized and static build for all supported systems.
 
   Note: To use this debugger, please start it outside of confinement, ie execute it directly:
 
   `/snap/gdb-static/current/usr/bin/gdb`
 
+  `/snap/gdb-static/current/usr/bin/gdbserver`
+
 confinement: strict
 build-base: core24
 base: bare
+source-code: https://sourceware.org/git/binutils-gdb.git
+website: https://sourceware.org/gdb/current/
+issues: https://github.com/fredldotme/gdb-static-snap/issues
 compression: lzo
 
 platforms:
@@ -24,7 +30,6 @@ platforms:
 
 apps:
   gdb-static:
-    #command-chain: [ usr/bin/envsetup ]
     command: usr/bin/gdb
 
 lint:
@@ -43,14 +48,26 @@ parts:
     override-build: |
       cd $CRAFT_PART_SRC
       craftctl set version="$(git describe --abbrev=0 --tags | awk -F'-' '{ print $2 }')"
-      ./configure --prefix=/usr --enable-static --disable-interprocess-agent --with-static-standard-libraries --disable-tui
-      make -j$(nproc --all)
+      mkdir -p staticlibs
+      cp -a /usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/lib{dl,gmp,mpfr,m}.a ./staticlibs/
+      ./configure --prefix=/usr \
+          --enable-static \
+          --disable-interprocess-agent \
+          --disable-inprocess-agent \
+          --without-expat \
+          --with-static-standard-libraries \
+          --disable-tui \
+          --with-gmp-lib=$(pwd)/staticlibs \
+          --with-mpfr-lib=$(pwd)/staticlibs \
+          LDFLAGS='-static'
+      make all-gdb all-gdbserver -j$(nproc --all)
+      DESTDIR=$CRAFT_PART_INSTALL make install-gdb install-gdbserver
+      rm -rf staticlibs
+      craftctl default
     override-stage: |
       craftctl default
     override-prime: |
       craftctl default
-      cd $CRAFT_PART_SRC
-      DESTDIR=$CRAFT_PRIME make install
     build-packages:
       - build-essential
       - bison
@@ -63,3 +80,6 @@ parts:
     prime:
       - usr/bin/gdb
       - usr/bin/gdbserver
+      - -usr/share
+      - -usr/lib
+      - -usr/include
