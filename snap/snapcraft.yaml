@@ -49,7 +49,7 @@ parts:
       cd $CRAFT_PART_SRC
       craftctl set version="$(git describe --abbrev=0 --tags | awk -F'-' '{ print $2 }')"
       mkdir -p staticlibs
-      cp -a /usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/lib{dl,gmp,mpfr,m}.a ./staticlibs/
+      cp -a /usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/lib{dl,gmp,mpfr}.a ./staticlibs/
       ./configure --prefix=/usr \
           --enable-static \
           --disable-interprocess-agent \
