@@ -39,17 +39,17 @@ lint:
 
 parts:
   gdb:
-    source: https://sourceware.org/git/binutils-gdb.git
-    source-tag: gdb-17.2-release
+    source: https://github.com/fredldotme/binutils-gdb-static.git
+    source-branch: gdb-static-17.1
     source-depth: 1
     plugin: nil
     override-pull: |
       craftctl default
     override-build: |
       cd $CRAFT_PART_SRC
-      craftctl set version="$(git describe --abbrev=0 --tags | awk -F'-' '{ print $2 }')"
+      craftctl set version="17.1"
       mkdir -p staticlibs
-      cp -a /usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/lib{dl,gmp,mpfr}.a ./staticlibs/
+      cp -a /usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/lib{gmp,mpfr}.a ./staticlibs/
       ./configure --prefix=/usr \
           --enable-static \
           --disable-interprocess-agent \
