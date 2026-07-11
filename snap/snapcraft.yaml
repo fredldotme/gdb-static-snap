@@ -1,7 +1,7 @@
 name: gdb-static
 adopt-info: gdb
 license: GPL-3.0-or-later
-summary: GDB as a static binary
+summary: gdb and server as a static binary
 description: |
   gdb & gdbserver, the go-to debugging tools for GNU/Linux and *BSD systems.
   This provides a minimalized and static build for all supported systems.
@@ -11,6 +11,10 @@ description: |
   `/snap/gdb-static/current/usr/bin/gdb`
 
   `/snap/gdb-static/current/usr/bin/gdbserver`
+
+  You can also add them to your `PATH` for easy access:
+
+  `export PATH="$PATH:/snap/gdb-static/current/usr/bin"`
 
 confinement: strict
 build-base: core24
@@ -58,7 +62,6 @@ parts:
           --enable-static \
           --disable-interprocess-agent \
           --disable-inprocess-agent \
-          --without-expat \
           --with-static-standard-libraries \
           --disable-tui \
           LDFLAGS='-static'
@@ -78,6 +81,7 @@ parts:
       - texinfo
       - libgmp-dev
       - libmpfr-dev
+      - libexpat-dev
     prime:
       - usr/bin/gdb
       - usr/bin/gdbserver
