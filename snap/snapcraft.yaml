@@ -15,7 +15,7 @@ description: |
 confinement: strict
 build-base: core24
 base: bare
-source-code: https://sourceware.org/git/binutils-gdb.git
+source-code: https://github.com/fredldotme/binutils-gdb-static
 website: https://sourceware.org/gdb/current/
 issues: https://github.com/fredldotme/gdb-static-snap/issues
 compression: lzo
@@ -27,6 +27,12 @@ platforms:
     build-on: [amd64]
   armhf:
     build-on: [armhf]
+  ppc64el:
+    build-on: [ppc64el]
+  riscv64:
+    build-on: [riscv64]
+  s390x:
+    build-on: [s390x]
 
 apps:
   gdb-static:
@@ -48,8 +54,6 @@ parts:
     override-build: |
       cd $CRAFT_PART_SRC
       craftctl set version="17.1"
-      mkdir -p staticlibs
-      cp -a /usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/lib{gmp,mpfr}.a ./staticlibs/
       ./configure --prefix=/usr \
           --enable-static \
           --disable-interprocess-agent \
@@ -57,12 +61,9 @@ parts:
           --without-expat \
           --with-static-standard-libraries \
           --disable-tui \
-          --with-gmp-lib=$(pwd)/staticlibs \
-          --with-mpfr-lib=$(pwd)/staticlibs \
           LDFLAGS='-static'
       make all-gdb all-gdbserver -j$(nproc --all)
       DESTDIR=$CRAFT_PART_INSTALL make install-gdb install-gdbserver
-      rm -rf staticlibs
       craftctl default
     override-stage: |
       craftctl default
